@@ -4,9 +4,29 @@ import {describe, expect, test} from 'bun:test'
 import {parse} from 'yaml'
 
 import {exampleYaml} from '#src/lib/domain/index.ts'
-import {dataSchema} from '#src/lib/schema/data.ts'
+import {dataJsonSchema, dataSchema} from '#src/lib/schema/data.ts'
 
 describe('data schema', () => {
+
+  test('exports a Draft-07 JSON Schema for Monacozen', () => {
+    expect(dataJsonSchema).toMatchObject({
+      $schema: 'http://json-schema.org/draft-07/schema#',
+      title: 'Domain Cards Data',
+      type: 'object',
+      additionalProperties: false,
+      required: ['domains'],
+      properties: {
+        sort: {
+          default: 'threeYears',
+          enum: ['firstYear', 'renewal', 'threeYears', 'length', 'original'],
+        },
+        domains: {
+          type: 'array',
+        },
+      },
+    })
+  })
+
   test('accepts the bundled example catalog', () => {
     const parsed = dataSchema.parse(parse(exampleYaml))
 

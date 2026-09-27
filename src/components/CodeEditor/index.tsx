@@ -4,6 +4,7 @@ import Monacozen from 'monacozen'
 import {useCallback} from 'react'
 
 import {useColorScheme} from '#src/hooks/useColorScheme.ts'
+import {dataJsonSchema} from '#src/lib/schema/data.ts'
 
 import css from './style.module.sass'
 
@@ -20,10 +21,12 @@ export default ({value, error, onChange}: CodeEditorProps) => {
   }, [onChange])
   return <div className={css.pane}>
     <Monacozen
+      aria-label='Domain catalog YAML'
       dark={scheme !== 'light'}
       defaultLanguage='yaml'
       language='yaml'
       loading={<div className={css.loading} />}
+      schema={dataJsonSchema}
       value={value}
       onChange={handleChange}
     />

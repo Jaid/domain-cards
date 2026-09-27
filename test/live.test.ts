@@ -61,43 +61,7 @@ describe.if(Boolean(Bun.env.target)).each(['chrome', 'firefox'])('%s', host => {
       await page.keyboard.down('Control')
       await page.keyboard.press('KeyA')
       await page.keyboard.up('Control')
-      await page.evaluate((selector, nextValue) => {
-        type BrowserEditContext = EventTarget & {
-          selectionStart: number
-          selectionEnd: number
-        }
-        type TextUpdateEventConstructor = new (type: string, init: {
-          updateRangeStart: number
-          updateRangeEnd: number
-          text: string
-          selectionStart: number
-          selectionEnd: number
-          compositionStart: number
-          compositionEnd: number
-        }) => Event
-
-        const element = document.querySelector(selector)
-        if (!(element instanceof HTMLElement)) {
-          throw new TypeError('Editor input was not found')
-        }
-        const editContext = (element as HTMLElement & {editContext?: BrowserEditContext}).editContext
-        if (!editContext) {
-          throw new TypeError('Editor EditContext is unavailable')
-        }
-        const TextUpdateEvent = (globalThis as typeof globalThis & {TextUpdateEvent?: TextUpdateEventConstructor}).TextUpdateEvent
-        if (!TextUpdateEvent) {
-          throw new TypeError('TextUpdateEvent is unavailable')
-        }
-        editContext.dispatchEvent(new TextUpdateEvent('textupdate', {
-          updateRangeStart: editContext.selectionStart,
-          updateRangeEnd: editContext.selectionEnd,
-          text: nextValue,
-          selectionStart: nextValue.length,
-          selectionEnd: nextValue.length,
-          compositionStart: -1,
-          compositionEnd: -1,
-        }))
-      }, editorSelector, value)
+      await page.keyboard.type(value)
     }
 
     await page.waitForSelector('[data-domain="slop.accountant"]')
@@ -105,7 +69,13 @@ describe.if(Boolean(Bun.env.target)).each(['chrome', 'firefox'])('%s', host => {
     await page.waitForSelector('[data-domain="hello.test"]')
     const updated = await page.$$eval('[data-domain]', elements => elements.map(element => element.getAttribute('data-domain')))
     expect(updated).toEqual(['hello.test', 'later.test'])
-    await setEditorText('sort: ]')
+    await page.click(editorWrapperSelector, {offset: {x: 100, y: 100}})
+    await page.keyboard.down('Control')
+    await page.keyboard.press('KeyA')
+    await page.keyboard.up('Control')
+    const client = await page.createCDPSession()
+    await client.send('Input.insertText', {text: 'sort: *'})
+    await client.detach()
     await page.waitForSelector('[role="alert"]')
     const afterError = await page.$$eval('[data-domain]', elements => elements.map(element => element.getAttribute('data-domain')))
     expect(afterError).toEqual(['hello.test', 'later.test'])
@@ -116,7 +86,7 @@ describe.if(Boolean(Bun.env.target)).each(['chrome', 'firefox'])('%s', host => {
         const output = `out/test/screenshots/${host}_${theme}_${scope}.png`
         let image: Uint8Array
         if (scope === 'page') {
-          const capture = await capturePage.save(vite.url, output, {browser, width: 1920, height: 960, colorScheme: theme, wait: {
+          const capture = await capturePage.save(vite.url, output, {browser: browser as never, width: 1920, height: 960, colorScheme: theme, wait: {
             count: 'all',
             rules: ['networkidle2', {selector: 'body>div>*'}],
           }})

@@ -1,9 +1,8 @@
 import zod from 'zod'
 
 const nonEmptyString = zod.string().trim().nonempty()
-const finiteNumber = zod.number().finite()
+const finiteNumber = zod.number()
 const priceSchema = finiteNumber.nonnegative().nullable().describe('domain price; null means the registrar did not provide a price')
-
 const vendorSchema = zod.union([
   nonEmptyString,
   zod.strictObject({
@@ -15,7 +14,6 @@ const vendorSchema = zod.union([
     'Specify at least a vendor name, URL, or logo.',
   ),
 ]).describe('registrar/vendor name shorthand or detailed vendor definition')
-
 const colorStopSchema = zod.union([
   finiteNumber.describe('hue in degrees; saturation and lightness are chosen automatically'),
   zod.strictObject({
@@ -25,7 +23,6 @@ const colorStopSchema = zod.union([
     price: finiteNumber.nonnegative().optional().describe('optional annual USD price anchor for this color'),
   }),
 ]).describe('one price-color gradient stop')
-
 const domainOfferSchema = zod.strictObject({
   domain: nonEmptyString.describe('domain name shown on the card'),
   vendor: vendorSchema.optional(),
@@ -57,6 +54,10 @@ export const dataSchema = zod.strictObject({
   domains: zod.array(domainOfferSchema).describe('domain offers rendered as cards'),
 }).describe('structured data for the domain-card renderer').meta({
   title: 'Domain Cards Data',
+})
+
+export const dataJsonSchema = zod.toJSONSchema(dataSchema, {
+  io: 'input',
 })
 
 export type Data = zod.input<typeof dataSchema>

@@ -67,7 +67,7 @@ async function buildRasterTable(browser: Browser, fontBase64: string): Promise<R
     '.cell>span{position:absolute;top:0;white-space:pre;font-family:R;font-size:100px;font-weight:400;font-style:normal;line-height:100px;font-kerning:normal;font-feature-settings:"liga" 0,"clig" 0,"calt" 0,"dlig" 0;color:#000}',
   ].join('')
   const result = await capturePage({html: `<style>${atlasCss}</style><div id="grid">${cells.join('')}</div>`}, {
-    browser,
+    browser: browser as never,
     width,
     height,
     deviceScaleFactor: 1,
