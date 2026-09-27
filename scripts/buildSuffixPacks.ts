@@ -75,7 +75,7 @@ async function buildTlds(): Promise<void> {
       suffix,
       width,
       ...meta?.privacy == null ? {} : {privacy: meta.privacy},
-      requirements: meta?.requirements ?? [],
+      ...meta?.requirements?.length ? {requirements: meta.requirements} : {},
     }
   })
   const messagePack = packr.pack(values)
