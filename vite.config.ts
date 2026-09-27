@@ -1,5 +1,3 @@
-/* eslint new-cap: ["warn", {"capIsNewExceptions": ["VitePWA"]}] */
-
 import type {PackageJson} from 'type-fest'
 import type {ConfigEnv, UserConfig} from 'vite'
 
@@ -10,10 +8,10 @@ import cssnano from 'cssnano-preset-advanced'
 import postcssNormalize from 'postcss-normalize'
 import {defineConfig, mergeConfig} from 'vite'
 import mediaMixinsPlugin from 'vite-plugin-media-mixins'
-import {VitePWA} from 'vite-plugin-pwa'
 import titlePlugin from 'vite-plugin-title'
 
 import componentExportNamesPlugin from '#root/lib/componentExportNamesPlugin.ts'
+import pwaPlugin from '#root/lib/pwaPlugin.ts'
 
 const packageJson = await Bun.file('package.json').json() as PackageJson
 const getCommonConfig = () => {
@@ -68,35 +66,10 @@ const getProductionConfig = () => {
       },
     },
     plugins: [
-      VitePWA({
-        registerType: 'autoUpdate',
-        manifest: {
-          name: title,
-          short_name: title,
-          description: packageJson.description,
-          theme_color: '#000',
-          background_color: '#000',
-          display: 'standalone',
-          icons: [
-            {
-              src: 'icon.svg',
-              sizes: 'any',
-              type: 'image/svg+xml',
-              purpose: 'any',
-            },
-            {
-              src: 'icon.svg',
-              sizes: 'any',
-              type: 'image/svg+xml',
-              purpose: 'maskable',
-            },
-          ],
-        },
-        workbox: {
-          globIgnores: ['**/*.worker-*.js'],
-          globPatterns: ['*.{js,css,html,svg}'],
-          maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
-        },
+      pwaPlugin({
+        name: title,
+        description: packageJson.description,
+        icon: 'icon.svg',
       }),
     ],
     css: {

@@ -8,9 +8,9 @@ import {dataJsonSchema, dataSchema} from '#src/lib/schema/data.ts'
 
 describe('data schema', () => {
 
-  test('exports a Draft-07 JSON Schema for Monacozen', () => {
+  test('exports a Draft 2020-12 JSON Schema for Monacozen', () => {
     expect(dataJsonSchema).toMatchObject({
-      $schema: 'http://json-schema.org/draft-07/schema#',
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
       title: 'Domain Cards Data',
       type: 'object',
       additionalProperties: false,

@@ -28,6 +28,14 @@ describe.if(Boolean(Bun.env.target)).each(['chrome', 'firefox'])('%s', host => {
   }, browserHookTimeout)
   beforeEach(async () => {
     page = await browser.newPage()
+    if (host === 'chrome') {
+      const client = await page.createCDPSession()
+      await client.send('Storage.clearDataForOrigin', {
+        origin: new URL(vite.url).origin,
+        storageTypes: 'all',
+      })
+      await client.detach()
+    }
     await page.goto(vite.url, {waitUntil: 'domcontentloaded'})
     await page.waitForSelector('body>div>*')
   }, browserHookTimeout)
