@@ -1,0 +1,50 @@
+.card
+  position: relative
+  display: flex
+  flex-direction: column
+  padding-inline: 8px
+  padding-block: 4px
+  border-radius: 6px
+  background: var(--card-bg)
+  color: var(--card-fg)
+  height: 64px
+  flex: 1 0 max-content
+  min-width: 0
+  // place-content: space-between
+  align-items: center
+  @include light
+    background: var(--card-bg-light)
+    color: var(--card-fg-light)
+
+.domain
+  font-family: Montserrat
+  font-weight: 600
+  font-size: 24px
+  line-height: 28px
+  white-space: nowrap
+  flex: 1
+  align-content: center
+  // vertical-align: middle
+  // text-fit: shrink
+  // align-content: end
+
+.meta
+  display: flex
+  align-items: center
+  gap: 6px
+  min-width: 0
+  font-size: 12px
+  // line-height: 1.2
+
+.price
+  font-variant-numeric: tabular-nums
+  font-weight: 550
+  letter-spacing: 0.01em
+
+.arrow
+  opacity: 0.55
+
+.unavailable
+  opacity: 0.58
+  font-style: italic
+  font-weight: 450

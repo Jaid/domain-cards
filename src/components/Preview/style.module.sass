@@ -1,0 +1,59 @@
+.preview
+  flex: 1 1 62%
+  min-width: 0
+  min-height: 0
+  overflow: auto
+  position: relative
+  scrollbar-width: thin
+  scrollbar-color: rgb(255 255 255 / 18%) transparent
+  @include light
+    scrollbar-color: rgb(0 0 0 / 18%) transparent
+
+.toolbar
+  position: sticky
+  top: 8px
+  z-index: 2
+  height: 0
+  display: flex
+  justify-content: flex-end
+  gap: 6px
+  padding-right: 8px
+  pointer-events: none
+
+.exportButton
+  pointer-events: auto
+  appearance: none
+  border: 1px solid rgb(255 255 255 / 18%)
+  border-radius: 5px
+  padding: 5px 8px
+  background: rgb(22 21 25 / 92%)
+  color: #f4f1ec
+  font: inherit
+  font-size: 11px
+  line-height: 1
+  cursor: pointer
+  box-shadow: 0 2px 8px rgb(0 0 0 / 28%)
+  &:hover:not(:disabled)
+    background: rgb(36 34 40 / 96%)
+  &:disabled
+    cursor: wait
+    opacity: 0.6
+  @include light
+    border-color: rgb(0 0 0 / 16%)
+    background: rgb(255 255 255 / 94%)
+    color: #16141a
+    box-shadow: 0 2px 8px rgb(0 0 0 / 12%)
+    &:hover:not(:disabled)
+      background: #fff
+
+.capture
+  box-sizing: border-box
+  min-height: 100%
+  display: flex
+  flex-wrap: balance
+  gap: 6px
+  align-content: center
+  padding: 6px
+  background: #000
+  @include light
+    background: #f4f2ee

@@ -18,3 +18,5 @@
 
 # Bun
 node_modules/
+
+/.cache/

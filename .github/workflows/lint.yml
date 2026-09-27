@@ -13,5 +13,7 @@ jobs:
       uses: oven-sh/setup-bun@v2.2.0
     - name: install
       run: bun install --frozen-lockfile
+    - name: knip
+      run: bunx --bun knip
     - name: eslint
       run: bunx --bun eslint .

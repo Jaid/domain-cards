@@ -1,0 +1,46 @@
+@import-normalize
+@import-sanitize
+
+@font-face
+  font-family: main
+  src: local("Geologica NF"), local("Geologica"), local("Lexend"), local("Miranda Sans")
+  font-display: swap
+
+@font-face
+  font-family: code
+  src: local("JetBrains Mono NF"), local("JetBrains Mono"), local("Iosevka Nerd Font Mono"), local("IosevkaTerm NFM"), local("UbuntuMono Nerd Font Mono")
+  font-display: swap
+
+:root
+  color-scheme: dark
+  background: black
+  color: white
+  font-family: main, system-ui, sans-serif
+  @include light
+    color-scheme: light
+    background: white
+    color: black
+
+*,
+*::before,
+*::after
+  box-sizing: border-box
+
+html,
+body
+  height: 100%
+  margin: 0
+  overflow: hidden
+  font-family: main, system-ui, sans-serif
+
+a:hover
+  text-decoration: underline
+
+code
+  font-family: code
+
+pre>code
+  white-space: pre-wrap
+
+::selection
+  background: rgb(120 180 160 / 35%)
