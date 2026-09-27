@@ -52,6 +52,9 @@
       },
     },
   },
+  "patchedDependencies": {
+    "@vite-pwa/workbox-build@8.0.6": "patches/@vite-pwa%2Fworkbox-build@8.0.6.patch",
+  },
   "packages": {
     "@altano/repository-tools": ["@altano/repository-tools@2.1.1", "", {}, "sha512-YFVhwoSjwkERQoopw3lX/TaPIDud0m6ac/Z51FoQ3YEPf0OaxFxpofbcHO0E2mTJ0lvmuRArIMUP9Pz2jpTMhg=="],
 

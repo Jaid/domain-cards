@@ -1,0 +1,44 @@
+diff --git a/dist/detector-BUU9sI1l.mjs b/dist/detector-BUU9sI1l.mjs
+index 5725b3451d0aeba569bb5548d93e52e9103a8fa4..365cb6df566f7da56129580e948ea3094be2fd7f 100644
+--- a/dist/detector-BUU9sI1l.mjs
++++ b/dist/detector-BUU9sI1l.mjs
+@@ -7,10 +7,11 @@
+ */
+ import { n as __exportAll } from "./rolldown-runtime-DuckeC48.mjs";
+ import { t as BundlerNames } from "./utils-BhPkCbtv.mjs";
+-import { findPackageJSON } from "node:module";
++import * as nodeModule from "node:module";
+ import process from "node:process";
+-import { readFileSync } from "node:fs";
+-import { pathToFileURL } from "node:url";
++import { existsSync, readFileSync } from "node:fs";
++import path from "node:path";
++import { fileURLToPath, pathToFileURL } from "node:url";
+ import { getMajor, isGreaterThanOrEqual } from "verkit";
+ //#region src/build/builder/detector.ts
+ var detector_exports = __exportAll({
+@@ -24,6 +25,24 @@ var detector_exports = __exportAll({
+ 	includeRolldownOxcPlugin: () => includeRolldownOxcPlugin
+ });
+ const base = pathToFileURL(`${process.cwd()}/`).href;
++function findPackageJSON(specifier, base) {
++	const nativeFindPackageJSON = nodeModule.findPackageJSON;
++	if (typeof nativeFindPackageJSON === "function") return nativeFindPackageJSON(specifier, base);
++	let resolved;
++	try {
++		resolved = import.meta.resolve(specifier, base);
++	} catch {
++		return;
++	}
++	let directory = path.dirname(fileURLToPath(resolved));
++	for (;;) {
++		const candidate = path.join(directory, "package.json");
++		if (existsSync(candidate)) return candidate;
++		const parent = path.dirname(directory);
++		if (parent === directory) return;
++		directory = parent;
++	}
++}
+ function readPkgVersion(specifier) {
+ 	const p = findPackageJSON(specifier, base);
+ 	if (!p) return;

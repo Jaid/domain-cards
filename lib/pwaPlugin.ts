@@ -1,6 +1,4 @@
-import type {HtmlTagDescriptor, Plugin, PluginOption, ResolvedConfig} from 'vite'
-
-import {spawn} from 'node:child_process'
+import type {HtmlTagDescriptor, Plugin, ResolvedConfig} from 'vite'
 
 type PwaPluginOptions = {
   description?: string
@@ -10,27 +8,10 @@ type PwaPluginOptions = {
 
 const withTrailingSlash = (value: string) => value.endsWith('/') ? value : `${value}/`
 
-const runServiceWorkerBuild = async (config: ResolvedConfig) => {
-  await new Promise<void>((resolve, reject) => {
-    const child = spawn('node', ['scripts/generateServiceWorker.mjs', config.build.outDir], {
-      cwd: config.root,
-      stdio: 'inherit',
-    })
-    child.on('error', reject)
-    child.on('exit', code => {
-      if (code === 0) {
-        resolve()
-      } else {
-        reject(new Error(`Service worker build exited with code ${code ?? 'unknown'}.`))
-      }
-    })
-  })
-}
-
-export default (options: PwaPluginOptions): PluginOption => {
+export default (options: PwaPluginOptions): Plugin => {
   let config: ResolvedConfig | undefined
-  const plugin: Plugin = {
-    name: 'domain-cards:pwa',
+  return {
+    name: 'domain-cards:pwa-assets',
     apply: 'build',
     configResolved(resolvedConfig) {
       config = resolvedConfig
@@ -94,15 +75,5 @@ export default (options: PwaPluginOptions): PluginOption => {
         source: `if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register(${JSON.stringify(`${base}sw.js`)},{scope:${JSON.stringify(base)}})})}`,
       })
     },
-    closeBundle: {
-      order: 'post',
-      sequential: true,
-      async handler() {
-        if (config) {
-          await runServiceWorkerBuild(config)
-        }
-      },
-    },
   }
-  return plugin
 }
