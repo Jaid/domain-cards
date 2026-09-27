@@ -1,6 +1,6 @@
 import type {SortMode} from './types.ts'
 
-const sortModes = new Set<SortMode>(['firstYear', 'renewal', 'threeYears', 'length', 'original'])
+const sortModes = new Set<SortMode>(['firstYear', 'renewal', 'threeYears', 'jaid', 'width', 'length', 'original'])
 const aliases: Record<string, SortMode> = {
   '3y': 'threeYears',
   '3year': 'threeYears',
@@ -9,6 +9,7 @@ const aliases: Record<string, SortMode> = {
   'first-year': 'firstYear',
   firstyear: 'firstYear',
   input: 'original',
+  jaid: 'jaid',
   length: 'length',
   original: 'original',
   renewal: 'renewal',
@@ -16,6 +17,7 @@ const aliases: Record<string, SortMode> = {
   'three-years': 'threeYears',
   threeyear: 'threeYears',
   threeyears: 'threeYears',
+  width: 'width',
   yaml: 'original',
 }
 

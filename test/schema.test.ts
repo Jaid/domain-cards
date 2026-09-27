@@ -18,7 +18,7 @@ describe('data schema', () => {
       properties: {
         sort: {
           default: 'threeYears',
-          enum: ['firstYear', 'renewal', 'threeYears', 'length', 'original'],
+          enum: ['firstYear', 'renewal', 'threeYears', 'jaid', 'width', 'length', 'original'],
         },
         domains: {
           type: 'array',

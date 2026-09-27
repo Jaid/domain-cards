@@ -1,4 +1,4 @@
-export type SortMode = 'firstYear' | 'length' | 'original' | 'renewal' | 'threeYears'
+export type SortMode = 'firstYear' | 'jaid' | 'length' | 'original' | 'renewal' | 'threeYears' | 'width'
 
 export type PunycodeMode = 'code' | 'raw' | false
 

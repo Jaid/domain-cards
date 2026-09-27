@@ -36,7 +36,7 @@ const domainOfferSchema = zod.strictObject({
 }).describe('one registrar offer rendered as a domain card')
 
 export const dataSchema = zod.strictObject({
-  sort: zod.enum(['firstYear', 'renewal', 'threeYears', 'length', 'original']).default('threeYears').describe('card ordering mode'),
+  sort: zod.enum(['firstYear', 'renewal', 'threeYears', 'jaid', 'width', 'length', 'original']).default('threeYears').describe('card ordering mode'),
   deduplication: zod.boolean().default(false).describe('whether duplicate domain names from multiple vendors are reduced to the cheapest offer for the active sort mode'),
   maximumSegments: zod.int().positive().optional().describe('maximum number of dot-separated domain segments to render'),
   punycode: zod.union([

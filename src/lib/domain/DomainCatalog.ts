@@ -8,6 +8,7 @@ import {defaultPriceColors, priceColors, priceColorsAtPrice, priceT, unavailable
 import {displayDomain, hasPunycode} from './displayDomain.ts'
 import {DomainOffer} from './DomainOffer.ts'
 import {compareNullableNumber, readSort} from './sort.ts'
+import {getDomainSuffixWidth} from './suffixWidth.ts'
 
 const listKeys = ['domains', 'items', 'records', 'offers'] as const
 
@@ -145,12 +146,29 @@ function readOffers(list: Array<unknown>, defaults: RootDefaults): Array<DomainO
   }
   return offers
 }
+const jaidTldRank = new Map([
+  ['zip', 0],
+  ['bar', 1],
+  ['show', 2],
+  ['cooking', 3],
+  ['in', 5],
+])
+function getJaidRank(domain: string): number {
+  const normalized = domain.toLowerCase().replace(/\.$/u, '')
+  return jaidTldRank.get(normalized.slice(normalized.lastIndexOf('.') + 1)) ?? 4
+}
 function compareOffers(a: DomainOffer, b: DomainOffer, mode: SortMode): number {
   if (mode === 'firstYear') {
     return compareNullableNumber(a.firstYearDollar, b.firstYearDollar)
   }
   if (mode === 'renewal') {
     return compareNullableNumber(a.renewalDollar, b.renewalDollar)
+  }
+  if (mode === 'jaid') {
+    return getJaidRank(a.domain) - getJaidRank(b.domain)
+  }
+  if (mode === 'width') {
+    return compareNullableNumber(getDomainSuffixWidth(a.domain), getDomainSuffixWidth(b.domain))
   }
   if (mode === 'length') {
     return a.domain.length - b.domain.length

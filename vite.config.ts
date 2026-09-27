@@ -1,6 +1,9 @@
 import type {PackageJson} from 'type-fest'
 import type {ConfigEnv, UserConfig} from 'vite'
 
+import {readFile} from 'node:fs/promises'
+import {brotliDecompressSync} from 'node:zlib'
+
 import babelPlugin from '@rolldown/plugin-babel'
 import {ViteWorkboxPWAPlugin as workboxPwaPlugin} from '@vite-pwa/workbox-build/build/vite/plugin'
 import reactPlugin, {reactCompilerPreset} from '@vitejs/plugin-react'
@@ -9,12 +12,32 @@ import cssnano from 'cssnano-preset-advanced'
 import postcssNormalize from 'postcss-normalize'
 import {defineConfig, mergeConfig} from 'vite'
 import mediaMixinsPlugin from 'vite-plugin-media-mixins'
+import {unpack} from 'msgpackr'
 import titlePlugin from 'vite-plugin-title'
 
 import componentExportNamesPlugin from '#root/lib/componentExportNamesPlugin.ts'
 import pwaPlugin from '#root/lib/pwaPlugin.ts'
 
+type SuffixMetadataRow = {
+  suffix: string
+  width: number
+}
+
 const packageJson = await Bun.file('package.json').json() as PackageJson
+const suffixMetadata = unpack(brotliDecompressSync(await readFile('private/suffixes/tlds.msgpack.br'))) as unknown
+if (!Array.isArray(suffixMetadata)) {
+  throw new TypeError('Expected TLD metadata to be an array.')
+}
+const suffixWidths = suffixMetadata.map(row => {
+  if (!row || typeof row !== 'object') {
+    throw new TypeError('Expected every TLD metadata row to be an object.')
+  }
+  const {suffix, width} = row as SuffixMetadataRow
+  if (typeof suffix !== 'string' || !Number.isSafeInteger(width) || width <= 0) {
+    throw new TypeError('Encountered invalid TLD width metadata.')
+  }
+  return [suffix, width] as const
+})
 const getCommonConfig = () => {
   const config: UserConfig = {
     build: {
@@ -29,6 +52,9 @@ const getCommonConfig = () => {
       }),
       mediaMixinsPlugin(),
     ],
+    define: {
+      __DOMAIN_CARDS_SUFFIX_WIDTHS__: JSON.stringify(suffixWidths),
+    },
     css: {
       postcss: {
         plugins: [

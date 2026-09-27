@@ -11,6 +11,7 @@ import {
   registrarHost,
   tryParseCatalog,
 } from '#src/lib/domain/index.ts'
+import {setSuffixWidthsForTesting} from '#src/lib/domain/suffixWidth.ts'
 
 const fixture = `
 sort: firstYear
@@ -333,6 +334,57 @@ items:
       'missing.example',
       'long-domain.example',
       'cheap.example',
+    ])
+  })
+  test('sorts by suffix width and Jaid preference', () => {
+    setSuffixWidthsForTesting([
+      ['zip', 147],
+      ['bar', 164],
+      ['show', 258],
+      ['cooking', 367],
+      ['in', 94],
+      ['firm.in', 302],
+      ['example', 220],
+    ])
+    const domains = [
+      {domain: 'one.in'},
+      {domain: 'two.example'},
+      {domain: 'three.cooking'},
+      {domain: 'four.zip'},
+      {domain: 'five.show'},
+      {domain: 'six.bar'},
+      {domain: 'seven.firm.in'},
+      {domain: 'unknown.invalid'},
+    ]
+    const byWidth = DomainCatalog.fromUnknown({
+      sort: 'width',
+      domains,
+    })
+    expect(byWidth.sort).toBe('width')
+    expect(byWidth.sorted().map(offer => offer.domain)).toEqual([
+      'one.in',
+      'four.zip',
+      'six.bar',
+      'two.example',
+      'five.show',
+      'seven.firm.in',
+      'three.cooking',
+      'unknown.invalid',
+    ])
+    const byJaid = DomainCatalog.fromUnknown({
+      sort: 'jaid',
+      domains,
+    })
+    expect(byJaid.sort).toBe('jaid')
+    expect(byJaid.sorted().map(offer => offer.domain)).toEqual([
+      'four.zip',
+      'six.bar',
+      'five.show',
+      'three.cooking',
+      'two.example',
+      'unknown.invalid',
+      'one.in',
+      'seven.firm.in',
     ])
   })
   test('colors cards from the active first-year range when sorted by first year', () => {
