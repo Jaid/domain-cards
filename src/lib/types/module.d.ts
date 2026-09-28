@@ -1,5 +1,4 @@
 declare const __DOMAIN_CARDS_SUFFIX_WIDTHS__: ReadonlyArray<readonly [suffix: string, width: number]>
-
 declare module '*.module.sass' {
   const classes: Record<string, string>
   export default classes

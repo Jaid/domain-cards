@@ -1,9 +1,6 @@
 type SuffixWidthEntry = readonly [suffix: string, width: number]
 
-const bundledSuffixWidths: ReadonlyArray<SuffixWidthEntry> = typeof __DOMAIN_CARDS_SUFFIX_WIDTHS__ === 'undefined'
-  ? []
-  : __DOMAIN_CARDS_SUFFIX_WIDTHS__
-
+const bundledSuffixWidths: ReadonlyArray<SuffixWidthEntry> = typeof __DOMAIN_CARDS_SUFFIX_WIDTHS__ === 'undefined' ? [] : __DOMAIN_CARDS_SUFFIX_WIDTHS__
 let suffixWidths = new Map<string, number>(bundledSuffixWidths)
 
 export function getDomainSuffixWidth(domain: string): number | null {

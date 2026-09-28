@@ -32,8 +32,10 @@
     "test-live": "bun run build:production && target=dist bun test test/live.test.ts",
     "vite": "bun node_modules/vite/dist/node/cli.js --configLoader runner"
   },
+  "patchedDependencies": {
+    "@vite-pwa/workbox-build@8.0.6": "patches/@vite-pwa%2Fworkbox-build@8.0.6.patch"
+  },
   "dependencies": {
-    "@zumer/snapdom": "3.1.1",
     "clsx": "2.1.1",
     "monacozen": "0.2.0",
     "mount-root": "0.5.0",
@@ -41,17 +43,10 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "yaml": "2.9.1",
-    "zod": "4.6.5"
+    "zod": "4.6.5",
+    "@zumer/snapdom": "3.1.1"
   },
   "devDependencies": {
-    "@babel/core": "8.0.6",
-    "@rolldown/plugin-babel": "0.2.4",
-    "@types/bun": "1.4.2",
-    "@types/postcss-normalize": "9.0.4",
-    "@types/react": "19.3.0",
-    "@types/react-dom": "19.3.0",
-    "@vite-pwa/workbox-build": "8.0.6",
-    "@vitejs/plugin-react": "6.1.1",
     "autoprefixer": "10.6.1",
     "babel-plugin-react-compiler": "1.0.0",
     "browserslist": "4.29.1",
@@ -76,9 +71,14 @@
     "typescript": "npm:typescript-classic@6.0.4",
     "vite": "8.3.1",
     "vite-plugin-media-mixins": "0.10.0",
-    "vite-plugin-title": "0.6.0"
-  },
-  "patchedDependencies": {
-    "@vite-pwa/workbox-build@8.0.6": "patches/@vite-pwa%2Fworkbox-build@8.0.6.patch"
+    "vite-plugin-title": "0.6.0",
+    "@babel/core": "8.0.6",
+    "@rolldown/plugin-babel": "0.2.4",
+    "@vite-pwa/workbox-build": "8.0.6",
+    "@vitejs/plugin-react": "6.1.1",
+    "@types/bun": "1.4.2",
+    "@types/postcss-normalize": "9.0.4",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0"
   }
 }

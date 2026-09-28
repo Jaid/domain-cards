@@ -9,10 +9,10 @@ import {ViteWorkboxPWAPlugin as workboxPwaPlugin} from '@vite-pwa/workbox-build/
 import reactPlugin, {reactCompilerPreset} from '@vitejs/plugin-react'
 import postcssAutoprefixer from 'autoprefixer'
 import cssnano from 'cssnano-preset-advanced'
+import {unpack} from 'msgpackr'
 import postcssNormalize from 'postcss-normalize'
 import {defineConfig, mergeConfig} from 'vite'
 import mediaMixinsPlugin from 'vite-plugin-media-mixins'
-import {unpack} from 'msgpackr'
 import titlePlugin from 'vite-plugin-title'
 
 import componentExportNamesPlugin from '#root/lib/componentExportNamesPlugin.ts'

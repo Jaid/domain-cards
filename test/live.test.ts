@@ -65,19 +65,24 @@ describe.if(Boolean(Bun.env.target)).each(['chrome', 'firefox'])('%s', host => {
     const editorSelector = `${editorWrapperSelector} [role="textbox"][aria-roledescription="editor"]`
     const setEditorText = async (value: string) => {
       await page.waitForSelector(editorSelector)
-      await page.click(editorWrapperSelector, {offset: {x: 100, y: 100}})
+      await page.click(editorWrapperSelector, {offset: {
+        x: 100,
+        y: 100,
+      }})
       await page.keyboard.down('Control')
       await page.keyboard.press('KeyA')
       await page.keyboard.up('Control')
       await page.keyboard.type(value)
     }
-
     await page.waitForSelector('[data-domain="slop.accountant"]')
     await setEditorText('{sort: original, domains: [{domain: hello.test, vendor: porkbun, currency: USD, firstYear: 4, renewal: 9}, {domain: later.test, vendor: spaceship, currency: USD, firstYear: 1, renewal: 1}]')
     await page.waitForSelector('[data-domain="hello.test"]')
     const updated = await page.$$eval('[data-domain]', elements => elements.map(element => element.getAttribute('data-domain')))
     expect(updated).toEqual(['hello.test', 'later.test'])
-    await page.click(editorWrapperSelector, {offset: {x: 100, y: 100}})
+    await page.click(editorWrapperSelector, {offset: {
+      x: 100,
+      y: 100,
+    }})
     await page.keyboard.down('Control')
     await page.keyboard.press('KeyA')
     await page.keyboard.up('Control')
