@@ -56,33 +56,6 @@ const vendors: ReadonlyArray<VendorSpec> = [
     requireBuyNow: true,
   },
 ]
-const yamlHeader = `sort: firstYear
-deduplication: true
-maximumSegments: 2
-punycode: false
-colors:
-- price: 0
-  hue: 250
-  saturation: 100
-  lightness: 40
-- price: 10
-  hue: 150
-  saturation: 100
-  lightness: 50
-- price: 25
-  hue: 90
-  saturation: 100
-  lightness: 70
-- price: 50
-  hue: 48
-  saturation: 100
-  lightness: 66
-- price: 100
-  hue: 30
-  saturation: 100
-  lightness: 45
-domains:
-`
 function readOptions(): {
   name: string
   recency: number
@@ -212,7 +185,7 @@ function offerFromRow(name: string, vendor: VendorSpec, row: VictoriaRow): Offer
   }
 }
 function yamlFor(offers: ReadonlyArray<Offer>): string {
-  let yaml = yamlHeader
+  let yaml = 'domains:\n'
   for (const offer of offers) {
     yaml += `- domain: ${offer.domain}\n`
     yaml += `  vendor: ${offer.vendor}\n`
