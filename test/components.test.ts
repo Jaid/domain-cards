@@ -44,12 +44,29 @@ describe('components', () => {
     const catalog = DomainCatalog.fromUnknown({
       currency: 'eur',
       currencyValue: {eur: 1.25},
-      maxPrice: {registration: 10, renewal: 10},
+      maxPrice: {
+        registration: 10,
+        renewal: 10,
+      },
       colorSource: 'renewal',
       domains: [
-        {domain: 'inherited.test', firstYear: 8, renewal: 9},
-        {domain: 'usd-boundary.test', currency: 'USD', firstYear: 12.5, renewal: 12.5},
-        {domain: 'excluded.test', currency: 'USD', firstYear: 12.51, renewal: 12.5},
+        {
+          domain: 'inherited.test',
+          firstYear: 8,
+          renewal: 9,
+        },
+        {
+          domain: 'usd-boundary.test',
+          currency: 'USD',
+          firstYear: 12.5,
+          renewal: 12.5,
+        },
+        {
+          domain: 'excluded.test',
+          currency: 'USD',
+          firstYear: 12.51,
+          renewal: 12.5,
+        },
       ],
     })
     const html = await render('Preview', {catalog})

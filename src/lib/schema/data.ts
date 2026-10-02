@@ -36,7 +36,6 @@ const domainOfferSchema = zod.strictObject({
   renewal: priceSchema.optional().describe('annual renewal price'),
   premium: zod.boolean().default(false).describe('whether the registry or registrar classifies this domain as premium'),
 }).describe('one registrar offer rendered as a domain card')
-
 const maxPriceSchema = zod.union([
   finiteNumber.nonnegative().describe('maximum registration and renewal price in the top-level currency'),
   zod.strictObject({

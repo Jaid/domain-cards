@@ -68,27 +68,46 @@ describe('data schema', () => {
   test('exposes currency, price limits, width limits and color sources to the editor', () => {
     expect(dataJsonSchema).toMatchObject({
       properties: {
-        currency: {enum: ['usd', 'eur'], default: 'usd'},
+        currency: {
+          enum: ['usd', 'eur'],
+          default: 'usd',
+        },
         currencyValue: {
           type: 'object',
           additionalProperties: false,
           default: {eur: 1.15},
-          properties: {eur: {type: 'number', exclusiveMinimum: 0, default: 1.15}},
+          properties: {eur: {
+            type: 'number',
+            exclusiveMinimum: 0,
+            default: 1.15,
+          }},
         },
         maxPrice: {
           anyOf: [
-            {type: 'number', minimum: 0},
+            {
+              type: 'number',
+              minimum: 0,
+            },
             {
               type: 'object',
               additionalProperties: false,
               properties: {
-                registration: {type: 'number', minimum: 0},
-                renewal: {type: 'number', minimum: 0},
+                registration: {
+                  type: 'number',
+                  minimum: 0,
+                },
+                renewal: {
+                  type: 'number',
+                  minimum: 0,
+                },
               },
             },
           ],
         },
-        maxWidth: {type: 'number', minimum: 0},
+        maxWidth: {
+          type: 'number',
+          minimum: 0,
+        },
         colorSource: {enum: ['threeYears', 'registration', 'renewal']},
       },
     })
@@ -97,19 +116,31 @@ describe('data schema', () => {
     const input: Data = {
       currency: 'eur',
       currencyValue: {eur: 1.25},
-      maxPrice: {registration: 10, renewal: 20},
+      maxPrice: {
+        registration: 10,
+        renewal: 20,
+      },
       maxWidth: 300,
       colorSource: 'renewal',
       domains: [],
     }
     expect(dataSchema.parse(input)).toMatchObject(input)
     for (const maxPrice of [0, 20, {}, {registration: 10}, {renewal: 20}]) {
-      expect(dataSchema.safeParse({...input, maxPrice}).success).toBe(true)
+      expect(dataSchema.safeParse({
+        ...input,
+        maxPrice,
+      }).success).toBe(true)
     }
     for (const colorSource of ['registration', 'renewal', 'threeYears']) {
-      expect(dataSchema.safeParse({...input, colorSource}).success).toBe(true)
+      expect(dataSchema.safeParse({
+        ...input,
+        colorSource,
+      }).success).toBe(true)
     }
-    expect(dataSchema.parse({currencyValue: {}, domains: []}).currencyValue).toEqual({eur: 1.15})
+    expect(dataSchema.parse({
+      currencyValue: {},
+      domains: [],
+    }).currencyValue).toEqual({eur: 1.15})
   })
   test('rejects invalid settings and unknown nested properties', () => {
     const invalid = [
@@ -133,7 +164,10 @@ describe('data schema', () => {
       {currencyValue: {usd: 1}},
     ]
     for (const settings of invalid) {
-      expect(dataSchema.safeParse({...settings, domains: []}).success).toBe(false)
+      expect(dataSchema.safeParse({
+        ...settings,
+        domains: [],
+      }).success).toBe(false)
     }
   })
   test('rejects unknown root and offer properties', () => {

@@ -289,7 +289,10 @@ export class DomainCatalog {
     this.colors = colors.length > 0 ? colors : defaultPriceColors
     this.colorStart = colorStart
     this.colorEnd = colorEnd
-    const limits = typeof this.maxPrice === 'number' ? {registration: this.maxPrice, renewal: this.maxPrice} : this.maxPrice
+    const limits = typeof this.maxPrice === 'number' ? {
+      registration: this.maxPrice,
+      renewal: this.maxPrice,
+    } : this.maxPrice
     const maxRegistration = dollarEquivalent(limits?.registration ?? null, this.currency, this.currencyValue)
     const maxRenewal = dollarEquivalent(limits?.renewal ?? null, this.currency, this.currencyValue)
     const filteredOffers = offers.filter(offer => {
@@ -327,7 +330,7 @@ export class DomainCatalog {
   colorsFor(offer: DomainOffer, scheme: ColorScheme) {
     const useRegistration = this.colorSource === 'registration'
     const useRenewal = this.colorSource === 'renewal'
-    const price = useRegistration ? offer.firstYearDollar : useRenewal ? offer.renewalDollar : offer.threeYearDollar
+    const price = useRegistration ? offer.firstYearDollar : (useRenewal ? offer.renewalDollar : offer.threeYearDollar)
     const annualFactor = this.colorSource === 'threeYears' ? 3 : 1
     const currencyFactor = dollarEquivalent(1, this.currency, this.currencyValue)!
     if (price == null) {

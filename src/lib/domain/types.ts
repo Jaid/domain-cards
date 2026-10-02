@@ -6,10 +6,10 @@ export type Currency = 'eur' | 'usd'
 
 export type CurrencyValue = Readonly<{eur: number}>
 
-export type MaxPrice = number | {
+export type MaxPrice = {
   registration?: number
   renewal?: number
-}
+} | number
 
 export type PunycodeMode = 'code' | 'raw' | false
 
