@@ -1,8 +1,9 @@
 import type {PriceLine} from './money.ts'
-import type {RootDefaults} from './types.ts'
+import type {CurrencyValue, RootDefaults} from './types.ts'
 import type {VendorRef} from './vendor.ts'
 
 import {readBoolean, readNumber, readString} from './coerce.ts'
+import {defaultCurrency, defaultCurrencyValue} from './currency.ts'
 import {displayDomain} from './displayDomain.ts'
 import {dollarEquivalent, formatMoney, priceLine, threeYearTotal} from './money.ts'
 import {bundledVendorIcon, bundledVendorIconBackground, logoSources, mergeVendor} from './vendor.ts'
@@ -17,13 +18,15 @@ export class DomainOffer {
       index,
       domain,
       currency: readString(record.currency) ?? readString(defaults.currency),
+      currencyValue: defaults.currencyValue,
       firstYear: readNumber(record.firstYear),
       renewal: readNumber(record.renewal),
       premium: readBoolean(record.premium),
       vendor: mergeVendor(record, defaults),
     })
   }
-  readonly currency: string | undefined
+  readonly currency: string
+  readonly currencyValue: CurrencyValue
   readonly domain: string
   readonly firstYear: number | null
   readonly index: number
@@ -34,6 +37,7 @@ export class DomainOffer {
 
   constructor(options: {
     currency?: string
+    currencyValue?: CurrencyValue
     domain: string
     firstYear: number | null
     index: number
@@ -43,7 +47,8 @@ export class DomainOffer {
   }) {
     this.index = options.index
     this.domain = options.domain
-    this.currency = options.currency
+    this.currency = options.currency ?? defaultCurrency
+    this.currencyValue = options.currencyValue ?? defaultCurrencyValue
     this.firstYear = options.firstYear
     this.renewal = options.renewal
     this.premium = options.premium
@@ -59,7 +64,7 @@ export class DomainOffer {
   }
 
   get firstYearDollar(): number | null {
-    return dollarEquivalent(this.firstYear, this.currency)
+    return dollarEquivalent(this.firstYear, this.currency, this.currencyValue)
   }
 
   get hasBundledVendorIcon(): boolean {
@@ -75,7 +80,7 @@ export class DomainOffer {
   }
 
   get renewalDollar(): number | null {
-    return dollarEquivalent(this.renewal, this.currency)
+    return dollarEquivalent(this.renewal, this.currency, this.currencyValue)
   }
 
   get summary(): string {
@@ -83,7 +88,7 @@ export class DomainOffer {
   }
 
   get threeYearDollar(): number | null {
-    return dollarEquivalent(this.threeYearPrice, this.currency)
+    return dollarEquivalent(this.threeYearPrice, this.currency, this.currencyValue)
   }
 
   get threeYearPrice(): number | null {

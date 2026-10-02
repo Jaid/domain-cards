@@ -1,3 +1,7 @@
+import type {CurrencyValue} from './types.ts'
+
+import {defaultCurrencyValue} from './currency.ts'
+
 const formatters = new Map<string, Intl.NumberFormat>
 const compactFormatters = new Map<string, Intl.NumberFormat>
 const currencyAffixes = new Map<string, CurrencyAffix>
@@ -5,10 +9,6 @@ const currencyAffixes = new Map<string, CurrencyAffix>
 export type CurrencyAffix = {
   prefix?: string
   suffix?: string
-}
-
-const dollarFactors: Record<string, number> = {
-  EUR: 1.15,
 }
 
 export type PriceLine =
@@ -23,12 +23,12 @@ export type PriceLine =
   }
   | {kind: 'unavailable'}
 
-export function dollarEquivalent(amount: number | null, currency?: string): number | null {
+export function dollarEquivalent(amount: number | null, currency?: string, currencyValue: CurrencyValue = defaultCurrencyValue): number | null {
   if (amount == null) {
     return null
   }
   const code = currency?.trim().toUpperCase()
-  return amount * (code ? dollarFactors[code] ?? 1 : 1)
+  return amount * (code === 'EUR' ? currencyValue.eur : 1)
 }
 
 export function currencyAffix(currency?: string): CurrencyAffix {

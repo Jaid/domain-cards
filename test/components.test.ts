@@ -40,6 +40,27 @@ describe('components', () => {
     expect(actor).toBeGreaterThan(accountant)
     expect(movie).toBeGreaterThan(actor)
   })
+  test('Preview applies mixed-currency filters while retaining original display currencies', async () => {
+    const catalog = DomainCatalog.fromUnknown({
+      currency: 'eur',
+      currencyValue: {eur: 1.25},
+      maxPrice: {registration: 10, renewal: 10},
+      colorSource: 'renewal',
+      domains: [
+        {domain: 'inherited.test', firstYear: 8, renewal: 9},
+        {domain: 'usd-boundary.test', currency: 'USD', firstYear: 12.5, renewal: 12.5},
+        {domain: 'excluded.test', currency: 'USD', firstYear: 12.51, renewal: 12.5},
+      ],
+    })
+    const html = await render('Preview', {catalog})
+    const text = html.replaceAll(/<[^>]+>/g, '')
+    expect(html).toContain('data-domain="inherited.test"')
+    expect(html).toContain('data-domain="usd-boundary.test"')
+    expect(html).not.toContain('excluded.test')
+    expect(text).toContain('€ 8 → € 9')
+    expect(text).toContain('$ 13')
+    expect(html).toContain(`--card-bg:${catalog.colorsFor(catalog.offers[0], 'dark').background}`)
+  })
   test('renders bundled vendor icons on their configured rounded backgrounds', async () => {
     const catalog = DomainCatalog.fromUnknown([
       {

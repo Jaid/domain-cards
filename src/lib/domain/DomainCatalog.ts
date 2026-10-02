@@ -1,14 +1,24 @@
-import type {ColorScheme, PriceColorStop, PunycodeMode, RootDefaults, SortMode} from './types.ts'
+import type {ColorScheme, ColorSource, Currency, CurrencyValue, MaxPrice, PriceColorStop, PunycodeMode, RootDefaults, SortMode} from './types.ts'
 import type {CSSProperties} from 'react'
 
 import {parseDocument, YAMLParseError} from 'yaml'
 
-import {readBoolean, readNumber, readRecord} from './coerce.ts'
+import {readBoolean, readNumber, readRecord, readString} from './coerce.ts'
 import {defaultPriceColors, priceColors, priceColorsAtPrice, priceT, unavailableColors} from './color.ts'
+import {defaultCurrency, defaultCurrencyValue, readCurrency, readCurrencyValue} from './currency.ts'
 import {displayDomain, hasPunycode} from './displayDomain.ts'
 import {DomainOffer} from './DomainOffer.ts'
+import {dollarEquivalent} from './money.ts'
 import {compareNullableNumber, readSort} from './sort.ts'
 import {getDomainSuffixWidth} from './suffixWidth.ts'
+
+type CatalogSettings = {
+  colorSource?: ColorSource
+  currency?: Currency
+  currencyValue?: CurrencyValue
+  maxPrice?: MaxPrice
+  maxWidth?: number
+}
 
 const listKeys = ['domains', 'items', 'records', 'offers'] as const
 
@@ -48,6 +58,28 @@ export function tryParseCatalog(text: string): {
 
 function readOptionalNumber(value: unknown): number | undefined {
   return readNumber(value) ?? undefined
+}
+function readNonnegativeNumber(value: unknown): number | undefined {
+  const number = readNumber(value)
+  return number != null && number >= 0 ? number : undefined
+}
+function readMaxPrice(value: unknown): MaxPrice | undefined {
+  const limit = readNonnegativeNumber(value)
+  if (limit != null) {
+    return limit
+  }
+  const record = readRecord(value)
+  if (!record) {
+    return undefined
+  }
+  return {
+    registration: readNonnegativeNumber(record.registration),
+    renewal: readNonnegativeNumber(record.renewal),
+  }
+}
+function readColorSource(value: unknown): ColorSource | undefined {
+  const source = readString(value)
+  return source === 'threeYears' || source === 'registration' || source === 'renewal' ? source : undefined
 }
 function readPunycode(value: unknown): PunycodeMode {
   if (value === false) {
@@ -186,12 +218,15 @@ export class DomainCatalog {
     }
     const input = raw as Record<string, unknown>
     const list = readList(input)
+    const currency = readCurrency(input.currency)
+    const currencyValue = readCurrencyValue(input.currencyValue)
     const defaults: RootDefaults = {
       vendor: input.vendor,
       registrar: input.registrar,
       vendorLogo: input.vendorLogo,
       vendorUrl: input.vendorUrl,
-      currency: input.currency,
+      currency,
+      currencyValue,
     }
     const maximumSegments = readNumber(input.maximumSegments)
     return new DomainCatalog(
@@ -203,6 +238,13 @@ export class DomainCatalog {
       readOptionalNumber(input.colorStart),
       readOptionalNumber(input.colorEnd),
       readPunycode(input.punycode),
+      {
+        currency,
+        currencyValue,
+        maxPrice: readMaxPrice(input.maxPrice),
+        maxWidth: readNonnegativeNumber(input.maxWidth),
+        colorSource: readColorSource(input.colorSource),
+      },
     )
   }
   static fromYaml(text: string): DomainCatalog {
@@ -214,12 +256,19 @@ export class DomainCatalog {
   }
   readonly colorEnd: number | undefined
   readonly colors: ReadonlyArray<PriceColorStop>
+  readonly colorSource: ColorSource
   readonly colorStart: number | undefined
+  readonly currency: Currency
+  readonly currencyValue: CurrencyValue
   readonly deduplication: boolean
   readonly maxFirstYear: number | null
   readonly maximumSegments: number | undefined
+  readonly maxPrice: MaxPrice | undefined
+  readonly maxRenewal: number | null
   readonly maxThreeYear: number | null
+  readonly maxWidth: number | undefined
   readonly minFirstYear: number | null
+  readonly minRenewal: number | null
   readonly minThreeYear: number | null
   readonly offers: ReadonlyArray<DomainOffer>
 
@@ -227,15 +276,37 @@ export class DomainCatalog {
 
   readonly sort: SortMode
 
-  constructor(offers: ReadonlyArray<DomainOffer>, sort: SortMode = 'threeYears', deduplication = false, maximumSegments?: number, colors: ReadonlyArray<PriceColorStop> = defaultPriceColors, colorStart?: number, colorEnd?: number, punycode: PunycodeMode = 'code') {
+  constructor(offers: ReadonlyArray<DomainOffer>, sort: SortMode = 'threeYears', deduplication = false, maximumSegments?: number, colors: ReadonlyArray<PriceColorStop> = defaultPriceColors, colorStart?: number, colorEnd?: number, punycode: PunycodeMode = 'code', settings: CatalogSettings = {}) {
     this.sort = sort
+    this.currency = settings.currency ?? defaultCurrency
+    this.currencyValue = settings.currencyValue ?? defaultCurrencyValue
+    this.maxPrice = settings.maxPrice
+    this.maxWidth = settings.maxWidth
+    this.colorSource = settings.colorSource ?? (sort === 'firstYear' ? 'registration' : 'threeYears')
     this.deduplication = deduplication
     this.maximumSegments = maximumSegments
     this.punycode = punycode
     this.colors = colors.length > 0 ? colors : defaultPriceColors
     this.colorStart = colorStart
     this.colorEnd = colorEnd
+    const limits = typeof this.maxPrice === 'number' ? {registration: this.maxPrice, renewal: this.maxPrice} : this.maxPrice
+    const maxRegistration = dollarEquivalent(limits?.registration ?? null, this.currency, this.currencyValue)
+    const maxRenewal = dollarEquivalent(limits?.renewal ?? null, this.currency, this.currencyValue)
     const filteredOffers = offers.filter(offer => {
+      const registration = offer.firstYearDollar
+      const renewal = offer.renewalDollar
+      if (maxRegistration != null && registration != null && registration > maxRegistration) {
+        return false
+      }
+      if (maxRenewal != null && renewal != null && renewal > maxRenewal) {
+        return false
+      }
+      if (this.maxWidth != null) {
+        const width = getDomainSuffixWidth(offer.domain)
+        if (width != null && width > this.maxWidth) {
+          return false
+        }
+      }
       if (maximumSegments != null && segmentCount(offer.domain) > maximumSegments) {
         return false
       }
@@ -248,21 +319,26 @@ export class DomainCatalog {
     const firstYearRange = priceRange(this.offers, offer => offer.firstYearDollar)
     this.minFirstYear = firstYearRange.min
     this.maxFirstYear = firstYearRange.max
+    const renewalRange = priceRange(this.offers, offer => offer.renewalDollar)
+    this.minRenewal = renewalRange.min
+    this.maxRenewal = renewalRange.max
   }
 
   colorsFor(offer: DomainOffer, scheme: ColorScheme) {
-    const useFirstYear = this.sort === 'firstYear'
-    const price = useFirstYear ? offer.firstYearDollar : offer.threeYearDollar
-    const annualFactor = useFirstYear ? 1 : 3
+    const useRegistration = this.colorSource === 'registration'
+    const useRenewal = this.colorSource === 'renewal'
+    const price = useRegistration ? offer.firstYearDollar : useRenewal ? offer.renewalDollar : offer.threeYearDollar
+    const annualFactor = this.colorSource === 'threeYears' ? 3 : 1
+    const currencyFactor = dollarEquivalent(1, this.currency, this.currencyValue)!
     if (price == null) {
       return unavailableColors(scheme)
     }
-    const anchored = priceColorsAtPrice(price / annualFactor, scheme, this.colors)
+    const anchored = priceColorsAtPrice(price / annualFactor / currencyFactor, scheme, this.colors)
     if (anchored) {
       return anchored
     }
-    const min = this.colorStart == null ? useFirstYear ? this.minFirstYear : this.minThreeYear : this.colorStart * annualFactor
-    const max = this.colorEnd == null ? useFirstYear ? this.maxFirstYear : this.maxThreeYear : this.colorEnd * annualFactor
+    const min = this.colorStart == null ? useRegistration ? this.minFirstYear : useRenewal ? this.minRenewal : this.minThreeYear : this.colorStart * annualFactor * currencyFactor
+    const max = this.colorEnd == null ? useRegistration ? this.maxFirstYear : useRenewal ? this.maxRenewal : this.maxThreeYear : this.colorEnd * annualFactor * currencyFactor
     if (min == null || max == null) {
       return unavailableColors(scheme)
     }

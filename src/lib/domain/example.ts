@@ -1,5 +1,9 @@
 const exampleYaml = `
+currency: usd
+currencyValue:
+  eur: 1.15
 sort: threeYears
+colorSource: threeYears
 maximumSegments: 2
 punycode: false
 colors:
