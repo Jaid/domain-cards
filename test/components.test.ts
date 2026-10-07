@@ -33,12 +33,10 @@ describe('components', () => {
   test('Preview preserves card order from the catalog sort', async () => {
     const catalog = DomainCatalog.fromYaml(exampleYaml)
     const html = await render('Preview', {catalog})
-    const accountant = html.indexOf('slop.accountant')
-    const actor = html.indexOf('slop.actor')
-    const movie = html.indexOf('slop.movie')
-    expect(accountant).toBeGreaterThan(-1)
-    expect(actor).toBeGreaterThan(accountant)
-    expect(movie).toBeGreaterThan(actor)
+    const positions = catalog.sorted().map(offer => html.indexOf(`data-domain="${offer.domain}"`))
+    expect(positions.length).toBeGreaterThan(1)
+    expect(positions).not.toContain(-1)
+    expect(positions).toEqual(positions.toSorted((a, b) => a - b))
   })
   test('Preview applies mixed-currency filters while retaining original display currencies', async () => {
     const catalog = DomainCatalog.fromUnknown({
@@ -108,6 +106,13 @@ describe('components', () => {
         renewal: 5,
         currency: 'USD',
       },
+      {
+        domain: 'cloudflare-icon.test',
+        vendor: 'cloudflare',
+        firstYear: 5,
+        renewal: 5,
+        currency: 'USD',
+      },
     ])
     const porkbun = await render('DomainCard', {
       catalog,
@@ -125,6 +130,10 @@ describe('components', () => {
       catalog,
       offer: catalog.offers[3],
     })
+    const cloudflare = await render('DomainCard', {
+      catalog,
+      offer: catalog.offers[4],
+    })
     expect(porkbun).toContain('class="bundledFrame"')
     expect(porkbun).toContain('background:#ef7878')
     expect(porkbun).not.toContain('google.com/s2/favicons')
@@ -137,6 +146,9 @@ describe('components', () => {
     expect(vercel).toContain('background:black')
     expect(spaceship).not.toContain('google.com/s2/favicons')
     expect(vercel).not.toContain('google.com/s2/favicons')
+    expect(cloudflare).toContain('class="bundledIcon"')
+    expect(cloudflare).toContain('background:white')
+    expect(cloudflare).not.toContain('google.com/s2/favicons')
   })
   test('renders raw punycode when configured', async () => {
     const catalog = DomainCatalog.fromUnknown({
