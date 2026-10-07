@@ -1,11 +1,10 @@
 const exampleYaml = `
-currency: usd
 currencyValue:
-  eur: 1.15
-sort: threeYears
-colorSource: threeYears
+  eur: 1.12
+sort: firstYear
 maximumSegments: 2
 punycode: false
+deduplication: true
 colors:
 - price: 0
   hue: 250
