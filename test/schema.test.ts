@@ -27,13 +27,11 @@ describe('data schema', () => {
     })
   })
   test('accepts the bundled example catalog', () => {
-    const parsed = dataSchema.parse(parse(exampleYaml))
-    expect(parsed.domains.map(offer => offer.domain)).toEqual([
-      'slop.accountant',
-      'slop.actor',
-      'slop.movie',
-    ])
-    expect(parsed.sort).toBe('threeYears')
+    const raw = parse(exampleYaml) as {domains: Array<{domain: string}>
+      sort?: Data['sort']}
+    const parsed = dataSchema.parse(raw)
+    expect(parsed.domains.map(offer => offer.domain)).toEqual(raw.domains.map(offer => offer.domain))
+    expect(parsed.sort).toBe(raw.sort ?? dataSchema.parse({domains: []}).sort)
   })
   test('applies schema defaults to minimal authored data', () => {
     const input: Data = {

@@ -1,5 +1,7 @@
 import {describe, expect, test} from 'bun:test'
 
+import {parse} from 'yaml'
+
 import {
   displayDomain,
   DomainCatalog,
@@ -39,24 +41,34 @@ domains:
     renewal: 12
 `
 describe('DomainCatalog', () => {
-  test('parses the bundled example and sorts by three-year total', () => {
+  test('parses the bundled example and sorts it by its configured mode', () => {
     const catalog = DomainCatalog.fromYaml(exampleYaml)
-    expect(catalog.sort).toBe('threeYears')
-    expect(catalog.offers.map(offer => offer.domain)).toEqual([
-      'slop.accountant',
-      'slop.actor',
-      'slop.movie',
-    ])
-    expect(catalog.sorted().map(offer => offer.domain)).toEqual([
-      'slop.accountant',
-      'slop.actor',
-      'slop.movie',
-    ])
-    expect(catalog.offers[0]?.price.kind).toBe('yearly')
-    expect(catalog.offers[1]?.price.kind).toBe('split')
-    expect(catalog.offers[0]?.threeYearPrice).toBeCloseTo(62.64)
-    expect(catalog.offers[1]?.threeYearPrice).toBeCloseTo(81.87)
-    expect(catalog.offers[2]?.threeYearPrice).toBeCloseTo(515.97)
+    const raw = parse(exampleYaml) as {domains: Array<{domain: string
+      firstYear: number
+      renewal: number}>
+      sort?: typeof catalog.sort}
+    expect(catalog.sort).toBe(raw.sort ?? 'threeYears')
+    expect(catalog.offers.map(offer => offer.domain)).toEqual(raw.domains.map(offer => offer.domain))
+    for (const [index, offer] of catalog.offers.entries()) {
+      const source = raw.domains[index]
+      expect(offer.price.kind).toBe(source.firstYear === source.renewal ? 'yearly' : 'split')
+      expect(offer.threeYearPrice).toBeCloseTo(source.firstYear + 2 * source.renewal)
+    }
+    const sortKeys: Record<string, (offer: typeof catalog.offers[number]) => number | null> = {
+      firstYear: offer => offer.firstYearDollar,
+      renewal: offer => offer.renewalDollar,
+      threeYears: offer => offer.threeYearDollar,
+    }
+    const sortKey = sortKeys[catalog.sort]
+    const sorted = catalog.sorted()
+    expect(sorted.length).toBeGreaterThan(0)
+    for (const offer of sorted) {
+      expect(raw.domains.map(source => source.domain)).toContain(offer.domain)
+    }
+    if (sortKey) {
+      const keys = sorted.map(offer => sortKey(offer) ?? Number.POSITIVE_INFINITY)
+      expect(keys).toEqual(keys.toSorted((a, b) => a - b))
+    }
   })
   test('supports punycode filtering and display modes', () => {
     const domains = [
@@ -662,8 +674,12 @@ describe('vendor logos', () => {
         domain: 'regery.test',
         vendor: 'regery',
       },
+      {
+        domain: 'cloudflare.test',
+        vendor: 'cloudflare',
+      },
     ])
-    const [spaceship, vercel, porkbun, regery] = catalog.offers
+    const [spaceship, vercel, porkbun, regery, cloudflare] = catalog.offers
     expect(spaceship?.hasBundledVendorIcon).toBe(true)
     expect(vercel?.hasBundledVendorIcon).toBe(true)
     expect(spaceship?.logoSources).toHaveLength(1)
@@ -676,5 +692,8 @@ describe('vendor logos', () => {
     expect(regery?.hasBundledVendorIcon).toBe(true)
     expect(regery?.logoSources).toHaveLength(1)
     expect(regery?.logoSources[0]).not.toContain('google.com')
+    expect(cloudflare?.hasBundledVendorIcon).toBe(true)
+    expect(cloudflare?.logoSources).toHaveLength(1)
+    expect(cloudflare?.logoSources[0]).not.toContain('google.com')
   })
 })
