@@ -16,7 +16,6 @@ type Offer = {
   currency: VendorSpec['currency']
   domain: string
   firstYear: number
-  premium: boolean
   renewal?: number
   vendor: VendorSpec['id']
 }
@@ -121,7 +120,6 @@ function queryFor(name: string, vendor: VendorSpec, bucket: string, recency: num
     'span_attr:domain.available',
     'span_attr:domain.buy_now',
     'span_attr:domain.requires_cart_verification',
-    'span_attr:domain.premium',
     vendor.purchaseField,
     vendor.renewalField,
   ].map(field => `"${field}"`).join(',')
@@ -188,7 +186,6 @@ function offerFromRow(name: string, vendor: VendorSpec, row: VictoriaRow): Offer
     currency: vendor.currency,
     firstYear,
     ...renewal == null ? {} : {renewal},
-    premium: row['span_attr:domain.premium'] === 'true',
   }
 }
 function yamlFor(offers: ReadonlyArray<Offer>): string {
@@ -196,12 +193,13 @@ function yamlFor(offers: ReadonlyArray<Offer>): string {
   for (const offer of offers) {
     yaml += `- domain: ${offer.domain}\n`
     yaml += `  vendor: ${offer.vendor}\n`
-    yaml += `  currency: ${offer.currency}\n`
+    if (offer.currency !== 'USD') {
+      yaml += `  currency: ${offer.currency}\n`
+    }
     yaml += `  firstYear: ${offer.firstYear}\n`
     if (offer.renewal != null) {
       yaml += `  renewal: ${offer.renewal}\n`
     }
-    yaml += `  premium: ${offer.premium}\n`
   }
   return yaml
 }
