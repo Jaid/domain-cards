@@ -5,7 +5,7 @@ type VictoriaRow = Record<string, string>
 
 type VendorSpec = {
   currency: 'EUR' | 'USD'
-  id: 'porkbun' | 'regery' | 'spaceship' | 'vercel'
+  id: 'cloudflare' | 'porkbun' | 'regery' | 'spaceship' | 'vercel'
   purchaseField: string
   renewalField: string
   requireBuyNow?: boolean
@@ -54,6 +54,13 @@ const vendors: ReadonlyArray<VendorSpec> = [
     purchaseField: 'span_attr:price.purchase.EUR.regery.total',
     renewalField: 'span_attr:price.renewal.EUR.regery.total',
     requireBuyNow: true,
+  },
+  {
+    id: 'cloudflare',
+    service: 'cloudflare-domain-availability',
+    currency: 'USD',
+    purchaseField: 'span_attr:price.purchase.USD.cloudflare.total',
+    renewalField: 'span_attr:price.renewal.USD.cloudflare.total',
   },
 ]
 function readOptions(): {
