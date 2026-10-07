@@ -1,3 +1,5 @@
+import cloudflareData from '#src/icons/cloudflare/data.ts'
+import cloudflareIcon from '#src/icons/cloudflare/icon.svg'
 import porkbunData from '#src/icons/porkbun/data.ts'
 import porkbunIcon from '#src/icons/porkbun/icon.svg'
 import regeryData from '#src/icons/regery/data.ts'
@@ -73,6 +75,10 @@ type BundledVendorIcon = {
 }
 
 const bundledVendorIcons: Record<string, BundledVendorIcon> = {
+  'cloudflare.com': {
+    src: cloudflareIcon,
+    ...cloudflareData,
+  },
   'porkbun.com': {
     src: porkbunIcon,
     ...porkbunData,

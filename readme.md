@@ -80,4 +80,6 @@ bun run measure:suffixes
 bun run build:suffix-packs
 ```
 
+`pull` reads the newest Domain Vendor Tracker results for Spaceship, Porkbun, Vercel, Regery and Cloudflare from VictoriaTraces and writes the available offers to `private/data/<name>.yml`.
+
 Local registrar snapshots and suffix datasets live under `private/` and are intentionally excluded from Git.
