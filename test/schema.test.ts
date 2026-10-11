@@ -27,8 +27,10 @@ describe('data schema', () => {
     })
   })
   test('accepts the bundled example catalog', () => {
-    const raw = parse(exampleYaml) as {domains: Array<{domain: string}>
-      sort?: Data['sort']}
+    const raw = parse(exampleYaml) as {
+      domains: Array<{domain: string}>
+      sort?: Data['sort']
+    }
     const parsed = dataSchema.parse(raw)
     expect(parsed.domains.map(offer => offer.domain)).toEqual(raw.domains.map(offer => offer.domain))
     expect(parsed.sort).toBe(raw.sort ?? dataSchema.parse({domains: []}).sort)

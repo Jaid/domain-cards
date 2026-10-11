@@ -43,10 +43,14 @@ domains:
 describe('DomainCatalog', () => {
   test('parses the bundled example and sorts it by its configured mode', () => {
     const catalog = DomainCatalog.fromYaml(exampleYaml)
-    const raw = parse(exampleYaml) as {domains: Array<{domain: string
-      firstYear: number
-      renewal: number}>
-      sort?: typeof catalog.sort}
+    const raw = parse(exampleYaml) as {
+      domains: Array<{
+        domain: string
+        firstYear: number
+        renewal: number
+      }>
+      sort?: typeof catalog.sort
+    }
     expect(catalog.sort).toBe(raw.sort ?? 'threeYears')
     expect(catalog.offers.map(offer => offer.domain)).toEqual(raw.domains.map(offer => offer.domain))
     for (const [index, offer] of catalog.offers.entries()) {
