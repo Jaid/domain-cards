@@ -18,15 +18,36 @@ function readQuery(): string {
   }
   return query
 }
-function main(): void {
+async function launch(browser: string, urls: ReadonlyArray<string>): Promise<void> {
+  if (process.platform !== 'win32') {
+    Bun.spawn([browser, ...urls], {
+      stdio: ['ignore', 'ignore', 'ignore'],
+      detached: true,
+    }).unref()
+    return
+  }
+  // Bun kills its child processes on exit on Windows, so the browser is handed to Start-Process, which outlives this script
+  const subprocess = Bun.spawn(['pwsh', '-NoProfile', '-NonInteractive', '-Command', 'Start-Process -FilePath $env:OPEN_TABS_BROWSER -ArgumentList ($env:OPEN_TABS_URLS -split "`n")'], {
+    env: {
+      ...process.env,
+      OPEN_TABS_BROWSER: browser,
+      OPEN_TABS_URLS: urls.join('\n'),
+    },
+    stdio: ['ignore', 'inherit', 'inherit'],
+  })
+  const exitCode = await subprocess.exited
+  if (exitCode !== 0) {
+    throw new Error(`Start-Process exited with code ${exitCode}`)
+  }
+}
+async function main(): Promise<void> {
   const query = readQuery()
   const browser = Bun.env.BROWSER
   if (!browser) {
     throw new Error('Environment variable BROWSER is not set')
   }
   const urls = Object.values(searchUrls).map(searchUrl => searchUrl(encodeURIComponent(query)))
-  const subprocess = Bun.spawn([browser, ...urls], {stdio: ['ignore', 'ignore', 'ignore']})
-  subprocess.unref()
+  await launch(browser, urls)
   console.log(`Opened ${urls.length} tabs for ${query} in ${browser}`)
 }
-main()
+await main()
