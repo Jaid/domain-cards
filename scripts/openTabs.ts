@@ -4,7 +4,7 @@ const searchUrls: Record<VendorId, (query: string) => string> = {
   vercel: query => `https://vercel.com/domains/search?q=${query}`,
   regery: query => `https://regery.com/en/domains/search/${query}`,
   cloudflare: query => `https://dash.cloudflare.com/?to=/:account/registrar/register?input=${query}`,
-  spaceship: query => `https://spaceship.com/domain-search?tab=domains&query=${query}`,
+  spaceship: query => `https://spaceship.com/domain-search?tab=beast&query=${query}`,
   porkbun: query => `https://porkbun.com/checkout/search?q=${query}`,
 }
 function readQuery(): string {
