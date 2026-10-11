@@ -53,7 +53,7 @@ export const dataSchema = zod.strictObject({
   maxWidth: finiteNumber.nonnegative().optional().describe('maximum suffix width from the same metadata as sort: width; measured in pixels at Roboto 100px, not card width; unknown widths are kept'),
   colorSource: zod.enum(['threeYears', 'registration', 'renewal']).optional().describe('price used for coloring independently of sort; registration uses firstYear; defaults to registration for sort: firstYear, otherwise threeYears'),
   sort: zod.enum(['firstYear', 'renewal', 'threeYears', 'jaid', 'width', 'length', 'original']).default('threeYears').describe('card ordering mode'),
-  deduplication: zod.boolean().default(false).describe('whether duplicate domain names from multiple vendors are reduced to the offer with the cheapest three-year total, independently of sort'),
+  deduplication: zod.boolean().default(false).describe('whether duplicate domain names from multiple vendors are reduced to the cheapest offer by the colorSource price'),
   maximumSegments: zod.int().positive().optional().describe('maximum number of dot-separated domain segments to render'),
   punycode: zod.union([
     zod.literal(false),

@@ -175,7 +175,7 @@ items:
     expect(limited.maximumSegments).toBe(2)
     expect(limited.offers.map(offer => offer.domain)).toEqual(['slop.com', 'single'])
   })
-  test('keeps multiple vendor rows by default and deduplicates to the cheapest three-year offer when enabled', () => {
+  test('keeps multiple vendor rows by default and deduplicates to the cheapest colorSource offer when enabled', () => {
     const catalog = DomainCatalog.fromYaml(fixture)
     expect(catalog.deduplication).toBe(false)
     const cheap = catalog.offers.filter(offer => offer.domain === 'cheap.example')
@@ -186,9 +186,10 @@ items:
     expect(deduplicated.offers.filter(offer => offer.domain === 'cheap.example')).toHaveLength(1)
     expect(deduplicated.offers.find(offer => offer.domain === 'cheap.example')?.vendorName).toBe('spaceship')
   })
-  test('deduplication ignores sort and preserves the first row on ties', () => {
+  test('deduplication follows colorSource and preserves the first row on ties', () => {
     const renewal = DomainCatalog.fromUnknown({
       sort: 'firstYear',
+      colorSource: 'renewal',
       deduplication: true,
       domains: [
         {
@@ -248,9 +249,10 @@ items:
     expect(original.offers).toHaveLength(1)
     expect(original.offers[0]?.vendorName).toBe('vercel')
   })
-  test.each(['firstYear', 'renewal', 'threeYears', 'jaid', 'width', 'length', 'original'])('deduplication with sort: %s keeps the same offers', sort => {
+  test.each(['firstYear', 'renewal', 'threeYears', 'jaid', 'width', 'length', 'original'])('deduplication with sort: %s keeps the same offers for the same colorSource', sort => {
     const deduplicated = DomainCatalog.fromUnknown({
       sort,
+      colorSource: 'threeYears',
       deduplication: true,
       domains: [
         {
@@ -274,6 +276,38 @@ items:
       ],
     })
     expect(deduplicated.offers.map(offer => offer.vendorName)).toEqual(['porkbun'])
+  })
+  test.each([
+    ['registration', 'vercel'],
+    ['renewal', 'spaceship'],
+    ['threeYears', 'porkbun'],
+  ] as const)('deduplication with colorSource: %s keeps %s', (colorSource, vendor) => {
+    const deduplicated = DomainCatalog.fromUnknown({
+      sort: 'width',
+      colorSource,
+      deduplication: true,
+      domains: [
+        {
+          domain: 'same.test',
+          vendor: 'spaceship',
+          firstYear: 35,
+          renewal: 15,
+        },
+        {
+          domain: 'same.test',
+          vendor: 'vercel',
+          firstYear: 1,
+          renewal: 40,
+        },
+        {
+          domain: 'same.test',
+          vendor: 'porkbun',
+          firstYear: 20,
+          renewal: 20,
+        },
+      ],
+    })
+    expect(deduplicated.offers.map(offer => offer.vendorName)).toEqual([vendor])
   })
   test('normalizes EUR prices to dollars for sorting, deduplication and coloring', () => {
     const domains = [

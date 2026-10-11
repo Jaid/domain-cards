@@ -129,12 +129,21 @@ function readColors(value: unknown): ReadonlyArray<PriceColorStop> {
 function segmentCount(domain: string): number {
   return domain.split('.').length
 }
-function deduplicateOffers(offers: ReadonlyArray<DomainOffer>): Array<DomainOffer> {
+function sourcePrice(offer: DomainOffer, source: ColorSource): number | null {
+  if (source === 'registration') {
+    return offer.firstYearDollar
+  }
+  if (source === 'renewal') {
+    return offer.renewalDollar
+  }
+  return offer.threeYearDollar
+}
+function deduplicateOffers(offers: ReadonlyArray<DomainOffer>, source: ColorSource): Array<DomainOffer> {
   const byDomain = new Map<string, DomainOffer>
   for (const offer of offers) {
     const key = offer.domain.toLowerCase()
     const current = byDomain.get(key)
-    if (!current || compareNullableNumber(offer.threeYearDollar, current.threeYearDollar) < 0) {
+    if (!current || compareNullableNumber(sourcePrice(offer, source), sourcePrice(current, source)) < 0) {
       byDomain.set(key, offer)
     }
   }
@@ -315,7 +324,7 @@ export class DomainCatalog {
       }
       return punycode !== false || !hasPunycode(offer.domain)
     })
-    this.offers = deduplication ? deduplicateOffers(filteredOffers) : filteredOffers
+    this.offers = deduplication ? deduplicateOffers(filteredOffers, this.colorSource) : filteredOffers
     const threeYearRange = priceRange(this.offers, offer => offer.threeYearDollar)
     this.minThreeYear = threeYearRange.min
     this.maxThreeYear = threeYearRange.max
@@ -330,7 +339,7 @@ export class DomainCatalog {
   colorsFor(offer: DomainOffer, scheme: ColorScheme) {
     const useRegistration = this.colorSource === 'registration'
     const useRenewal = this.colorSource === 'renewal'
-    const price = useRegistration ? offer.firstYearDollar : (useRenewal ? offer.renewalDollar : offer.threeYearDollar)
+    const price = sourcePrice(offer, this.colorSource)
     const annualFactor = this.colorSource === 'threeYears' ? 3 : 1
     const currencyFactor = dollarEquivalent(1, this.currency, this.currencyValue)!
     if (price == null) {
