@@ -1,10 +1,10 @@
 type VendorId = 'cloudflare' | 'porkbun' | 'regery' | 'spaceship' | 'vercel'
 
 const searchUrls: Record<VendorId, (query: string) => string> = {
-  spaceship: query => `https://spaceship.com/domain-search?tab=beast&query=${query}`,
   porkbun: query => `https://porkbun.com/checkout/search?q=${query}`,
+  spaceship: query => `https://spaceship.com/domain-search?tab=beast&query=${query}`,
   regery: query => `https://regery.com/en/domains/search/${query}`,
-  cloudflare: query => `https://dash.cloudflare.com/?to=/:account/registrar/register?query=${query}`,
+  cloudflare: query => `https://dash.cloudflare.com/?to=/:account/domains/registrations/purchase?query=${query}`,
   vercel: query => `https://vercel.com/domains/search?q=${query}`,
 }
 function readQuery(): string {
