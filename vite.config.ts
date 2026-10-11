@@ -80,7 +80,8 @@ const getDevelopmentConfig = (context: ConfigEnv) => {
 }
 const getProductionConfig = () => {
   const title = (packageJson.displayName || packageJson.name) as string
-  const cssnanoPlugins = cssnano().plugins.map(([createPlugin, options]) => createPlugin(options))
+  // Monacozen loads Antimono via JavaScript; CSS-only unused-font detection would remove its faces.
+  const cssnanoPlugins = cssnano({discardUnused: {fontFace: false}}).plugins.map(([createPlugin, options]) => createPlugin(options))
   const config: UserConfig = {
     build: {
       assetsDir: '',
@@ -102,7 +103,7 @@ const getProductionConfig = () => {
         strategy: 'generate-sw',
         generateSW: {
           swDest: 'sw.js',
-          globPatterns: ['*.{js,css,html,svg}'],
+          globPatterns: ['*.{js,css,html,svg,woff2,ttf}'],
           globIgnores: ['**/*.worker-*.js'],
           maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
           cleanupOutdatedCaches: true,

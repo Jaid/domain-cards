@@ -1,0 +1,44 @@
+diff --git a/dist/detector-D3k57d9c.mjs b/dist/detector-D3k57d9c.mjs
+index 10f03253258f88a2ac3080405d726921dac676ca..1c2538db44376ebb626bbf9a5cac66b1a7c86d94 100644
+--- a/dist/detector-D3k57d9c.mjs
++++ b/dist/detector-D3k57d9c.mjs
+@@ -7,10 +7,11 @@
+ */
+ import { n as __exportAll } from "./rolldown-runtime-DuckeC48.mjs";
+ import { t as BundlerNames } from "./utils-CLRV0h-_.mjs";
+-import { findPackageJSON } from "node:module";
++import * as nodeModule from "node:module";
+ import process from "node:process";
+-import { readFileSync } from "node:fs";
+-import { pathToFileURL } from "node:url";
++import { existsSync, readFileSync } from "node:fs";
++import path from "node:path";
++import { fileURLToPath, pathToFileURL } from "node:url";
+ import { getMajor, isGreaterThanOrEqual } from "verkit";
+ //#region src/build/builder/detector.ts
+ var detector_exports = __exportAll({
+@@ -25,6 +26,24 @@ var detector_exports = __exportAll({
+ });
+ const base = pathToFileURL(`${process.cwd()}/`).href;
+ const VITE_PLUS_CORE_PKG_NAME = "@voidzero-dev/vite-plus-core";
++function findPackageJSON(specifier, basePath) {
++  const nativeFindPackageJSON = nodeModule.findPackageJSON;
++  if (typeof nativeFindPackageJSON === "function") return nativeFindPackageJSON(specifier, basePath);
++  let resolved;
++  try {
++    resolved = import.meta.resolve(specifier, basePath);
++  } catch {
++    return;
++  }
++  let directory = path.dirname(fileURLToPath(resolved));
++  for (;;) {
++    const candidate = path.join(directory, "package.json");
++    if (existsSync(candidate)) return candidate;
++    const parent = path.dirname(directory);
++    if (parent === directory) return;
++    directory = parent;
++  }
++}
+ function findPackageJSONSafe(specifier, basePath) {
+ 	try {
+ 		return findPackageJSON(specifier, basePath);

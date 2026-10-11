@@ -33,7 +33,7 @@
     "vite": "bun node_modules/vite/dist/node/cli.js --configLoader runner"
   },
   "patchedDependencies": {
-    "@vite-pwa/workbox-build@8.0.6": "patches/@vite-pwa%2Fworkbox-build@8.0.6.patch"
+    "@vite-pwa/workbox-build@8.0.9": "patches/@vite-pwa%2Fworkbox-build@8.0.9.patch"
   },
   "dependencies": {
     "clsx": "2.1.1",
