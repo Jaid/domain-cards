@@ -175,7 +175,7 @@ items:
     expect(limited.maximumSegments).toBe(2)
     expect(limited.offers.map(offer => offer.domain)).toEqual(['slop.com', 'single'])
   })
-  test('keeps multiple vendor rows by default and deduplicates to the best active-sort offer when enabled', () => {
+  test('keeps multiple vendor rows by default and deduplicates to the cheapest three-year offer when enabled', () => {
     const catalog = DomainCatalog.fromYaml(fixture)
     expect(catalog.deduplication).toBe(false)
     const cheap = catalog.offers.filter(offer => offer.domain === 'cheap.example')
@@ -186,9 +186,9 @@ items:
     expect(deduplicated.offers.filter(offer => offer.domain === 'cheap.example')).toHaveLength(1)
     expect(deduplicated.offers.find(offer => offer.domain === 'cheap.example')?.vendorName).toBe('spaceship')
   })
-  test('deduplication uses the active price sort and preserves the first row on ties', () => {
+  test('deduplication ignores sort and preserves the first row on ties', () => {
     const renewal = DomainCatalog.fromUnknown({
-      sort: 'renewal',
+      sort: 'firstYear',
       deduplication: true,
       domains: [
         {
@@ -246,7 +246,34 @@ items:
       ],
     })
     expect(original.offers).toHaveLength(1)
-    expect(original.offers[0]?.vendorName).toBe('spaceship')
+    expect(original.offers[0]?.vendorName).toBe('vercel')
+  })
+  test.each(['firstYear', 'renewal', 'threeYears', 'jaid', 'width', 'length', 'original'])('deduplication with sort: %s keeps the same offers', sort => {
+    const deduplicated = DomainCatalog.fromUnknown({
+      sort,
+      deduplication: true,
+      domains: [
+        {
+          domain: 'same.test',
+          vendor: 'spaceship',
+          firstYear: 30,
+          renewal: 30,
+        },
+        {
+          domain: 'same.test',
+          vendor: 'vercel',
+          firstYear: 1,
+          renewal: 40,
+        },
+        {
+          domain: 'same.test',
+          vendor: 'porkbun',
+          firstYear: 20,
+          renewal: 20,
+        },
+      ],
+    })
+    expect(deduplicated.offers.map(offer => offer.vendorName)).toEqual(['porkbun'])
   })
   test('normalizes EUR prices to dollars for sorting, deduplication and coloring', () => {
     const domains = [

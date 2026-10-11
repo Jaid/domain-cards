@@ -129,12 +129,12 @@ function readColors(value: unknown): ReadonlyArray<PriceColorStop> {
 function segmentCount(domain: string): number {
   return domain.split('.').length
 }
-function deduplicateOffers(offers: ReadonlyArray<DomainOffer>, sort: SortMode): Array<DomainOffer> {
+function deduplicateOffers(offers: ReadonlyArray<DomainOffer>): Array<DomainOffer> {
   const byDomain = new Map<string, DomainOffer>
   for (const offer of offers) {
     const key = offer.domain.toLowerCase()
     const current = byDomain.get(key)
-    if (!current || sort !== 'original' && compareOffers(offer, current, sort) < 0) {
+    if (!current || compareNullableNumber(offer.threeYearDollar, current.threeYearDollar) < 0) {
       byDomain.set(key, offer)
     }
   }
@@ -315,7 +315,7 @@ export class DomainCatalog {
       }
       return punycode !== false || !hasPunycode(offer.domain)
     })
-    this.offers = deduplication ? deduplicateOffers(filteredOffers, sort) : filteredOffers
+    this.offers = deduplication ? deduplicateOffers(filteredOffers) : filteredOffers
     const threeYearRange = priceRange(this.offers, offer => offer.threeYearDollar)
     this.minThreeYear = threeYearRange.min
     this.maxThreeYear = threeYearRange.max
